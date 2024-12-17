@@ -1,0 +1,44 @@
+name: Snyk Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  snyk-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, intl, curl
+
+    - name: Install Composer
+      run: |
+        curl -sS https://getcomposer.org/installer | php
+        mv composer.phar /usr/local/bin/composer
+
+    - name: Install Laravel dependencies
+      run: |
+        composer install
+
+    - name: Install Snyk CLI
+      run: npm install -g snyk
+
+    - name: Authenticate with Snyk
+      run: snyk auth ${{ 83f653f7-0ef2-4a40-a195-2339eb15b8ed }}
+
+    - name: Run Snyk test
+      run: snyk test --all-projects
+
+    - name: Run Snyk monitor
+      run: snyk monitor --all-projects
